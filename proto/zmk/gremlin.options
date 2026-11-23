@@ -1,0 +1,6 @@
+zmk.gremlin.DisplayConfig.anim_sequence max_count:16
+zmk.gremlin.ComboConfig.key_positions max_count:4
+zmk.gremlin.TapDanceConfig.bindings max_count:4
+zmk.gremlin.MacroConfig.steps max_count:12
+zmk.gremlin.BitmapChunk.data max_size:256
+zmk.gremlin.SetBitmapChunkRequest.data max_size:256

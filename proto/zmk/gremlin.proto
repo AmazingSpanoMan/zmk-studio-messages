@@ -1,0 +1,243 @@
+syntax = "proto3";
+
+package zmk.gremlin;
+
+enum GremlinStatusCode {
+    GREMLIN_STATUS_OK = 0;
+    GREMLIN_STATUS_ERR_GENERIC = 1;
+    GREMLIN_STATUS_ERR_INVALID_SLOT = 2;
+    GREMLIN_STATUS_ERR_INVALID_ARG = 3;
+    GREMLIN_STATUS_ERR_NOT_SUPPORTED = 4;
+    GREMLIN_STATUS_ERR_NO_SPACE = 5;
+}
+
+enum StickMode {
+    STICK_MODE_SWITCH = 0;
+    STICK_MODE_MOUSE = 1;
+    STICK_MODE_SCROLL = 2;
+}
+
+enum HoldTapFlavor {
+    HOLD_TAP_FLAVOR_HOLD_PREFERRED = 0;
+    HOLD_TAP_FLAVOR_BALANCED = 1;
+    HOLD_TAP_FLAVOR_TAP_PREFERRED = 2;
+}
+
+enum MacroStepType {
+    MACRO_STEP_TAP = 0;
+    MACRO_STEP_PRESS = 1;
+    MACRO_STEP_RELEASE = 2;
+    MACRO_STEP_WAIT_MS = 3;
+}
+
+enum BitmapTarget {
+    BITMAP_TARGET_MASCOT = 0;
+    BITMAP_TARGET_BOOT = 1;
+    BITMAP_TARGET_SLEEP = 2;
+}
+
+message BindingSpec {
+    sint32 behavior_id = 1;
+    uint32 param1 = 2;
+    uint32 param2 = 3;
+}
+
+message Capabilities {
+    uint32 protocol_version = 1;
+    uint32 max_combos = 2;
+    uint32 max_hold_taps = 3;
+    uint32 max_tap_dances = 4;
+    uint32 max_macros = 5;
+    uint32 max_mascot_frames = 6;
+    uint32 max_stick_layers = 7;
+    uint32 max_macro_steps = 8;
+    uint32 max_tap_dance_steps = 9;
+    uint32 max_combo_keys = 10;
+    uint32 bitmap_chunk_size = 11;
+    uint32 storage_total_bytes = 12;
+    uint32 storage_used_bytes = 13;
+}
+
+message SleepConfig {
+    uint32 display_sleep_ms = 1;
+    uint32 idle_timeout_ms = 2;
+    uint32 deep_sleep_ms = 3;
+}
+
+message DisplayConfig {
+    bool show_layer_badge = 1;
+    bool show_battery_icon = 2;
+    bool show_battery_percent = 3;
+    bool show_output_badge = 4;
+    bool show_footer = 5;
+    bool show_mascot = 6;
+    bool show_mascot_border = 7;
+    uint32 boot_duration_ms = 8;
+    uint32 mascot_frame_ms = 9;
+    uint32 mascot_frame_count = 10;
+    repeated uint32 anim_sequence = 11;
+}
+
+message StickConfig {
+    int32 x_min = 1;
+    int32 x_center = 2;
+    int32 x_max = 3;
+    int32 y_min = 4;
+    int32 y_center = 5;
+    int32 y_max = 6;
+    bool invert_x = 7;
+    bool invert_y = 8;
+    uint32 deadzone_percent = 9;
+}
+
+message StickLayerConfig {
+    uint32 layer_index = 1;
+    StickMode mode = 2;
+    uint32 up_position = 3;
+    uint32 down_position = 4;
+    uint32 left_position = 5;
+    uint32 right_position = 6;
+    uint32 switch_activation_point = 7;
+    uint32 switch_hysteresis = 8;
+    uint32 mouse_min_speed = 9;
+    uint32 mouse_max_speed = 10;
+    uint32 scroll_divisor = 11;
+}
+
+message StickTelemetry {
+    int32 raw_x = 1;
+    int32 raw_y = 2;
+    int32 out_x = 3;
+    int32 out_y = 4;
+    uint32 active_layer = 5;
+    bool l3_pressed = 6;
+}
+
+message ComboConfig {
+    uint32 index = 1;
+    bool enabled = 2;
+    uint32 timeout_ms = 3;
+    uint32 require_prior_idle_ms = 4;
+    uint32 layer_mask = 5;
+    bool slow_release = 6;
+    repeated int32 key_positions = 7;
+    BindingSpec binding = 8;
+}
+
+message HoldTapConfig {
+    uint32 index = 1;
+    bool enabled = 2;
+    uint32 tapping_term_ms = 3;
+    uint32 quick_tap_ms = 4;
+    uint32 require_prior_idle_ms = 5;
+    HoldTapFlavor flavor = 6;
+    bool retro_tap = 7;
+    BindingSpec hold_binding = 8;
+    BindingSpec tap_binding = 9;
+}
+
+message TapDanceConfig {
+    uint32 index = 1;
+    bool enabled = 2;
+    uint32 tapping_term_ms = 3;
+    repeated BindingSpec bindings = 4;
+}
+
+message MacroStep {
+    MacroStepType type = 1;
+    BindingSpec binding = 2;
+    uint32 delay_ms = 3;
+}
+
+message MacroConfig {
+    uint32 index = 1;
+    bool enabled = 2;
+    uint32 wait_ms = 3;
+    uint32 tap_ms = 4;
+    repeated MacroStep steps = 5;
+}
+
+message GetBitmapChunkRequest {
+    BitmapTarget target = 1;
+    uint32 slot = 2;
+    uint32 offset = 3;
+    uint32 length = 4;
+}
+
+message BitmapChunk {
+    BitmapTarget target = 1;
+    uint32 slot = 2;
+    uint32 offset = 3;
+    uint32 total_size = 4;
+    bool is_custom = 5;
+    bytes data = 6;
+}
+
+message SetBitmapChunkRequest {
+    BitmapTarget target = 1;
+    uint32 slot = 2;
+    uint32 offset = 3;
+    uint32 total_size = 4;
+    bytes data = 5;
+}
+
+message ClearBitmapRequest {
+    BitmapTarget target = 1;
+    uint32 slot = 2;
+}
+
+message Request {
+    oneof request_type {
+        bool get_capabilities = 1;
+        bool get_sleep_config = 2;
+        SleepConfig set_sleep_config = 3;
+        bool get_display_config = 4;
+        DisplayConfig set_display_config = 5;
+        bool get_stick_config = 6;
+        StickConfig set_stick_config = 7;
+        uint32 get_stick_layer_config = 8;
+        StickLayerConfig set_stick_layer_config = 9;
+        bool get_stick_telemetry = 10;
+        uint32 get_combo = 11;
+        ComboConfig set_combo = 12;
+        uint32 get_hold_tap = 13;
+        HoldTapConfig set_hold_tap = 14;
+        uint32 get_tap_dance = 15;
+        TapDanceConfig set_tap_dance = 16;
+        uint32 get_macro = 17;
+        MacroConfig set_macro = 18;
+        GetBitmapChunkRequest get_bitmap_chunk = 19;
+        SetBitmapChunkRequest set_bitmap_chunk = 20;
+        ClearBitmapRequest clear_bitmap = 21;
+        bool save_settings = 22;
+        bool reset_gremlin_defaults = 23;
+    }
+}
+
+message Response {
+    oneof response_type {
+        Capabilities get_capabilities = 1;
+        SleepConfig get_sleep_config = 2;
+        GremlinStatusCode set_sleep_config = 3;
+        DisplayConfig get_display_config = 4;
+        GremlinStatusCode set_display_config = 5;
+        StickConfig get_stick_config = 6;
+        GremlinStatusCode set_stick_config = 7;
+        StickLayerConfig get_stick_layer_config = 8;
+        GremlinStatusCode set_stick_layer_config = 9;
+        StickTelemetry get_stick_telemetry = 10;
+        ComboConfig get_combo = 11;
+        GremlinStatusCode set_combo = 12;
+        HoldTapConfig get_hold_tap = 13;
+        GremlinStatusCode set_hold_tap = 14;
+        TapDanceConfig get_tap_dance = 15;
+        GremlinStatusCode set_tap_dance = 16;
+        MacroConfig get_macro = 17;
+        GremlinStatusCode set_macro = 18;
+        BitmapChunk get_bitmap_chunk = 19;
+        GremlinStatusCode set_bitmap_chunk = 20;
+        GremlinStatusCode clear_bitmap = 21;
+        GremlinStatusCode save_settings = 22;
+        GremlinStatusCode reset_gremlin_defaults = 23;
+    }
+}
